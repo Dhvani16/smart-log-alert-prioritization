@@ -1,0 +1,5 @@
+*/__pycache__
+*/venv
+
+datasets/raw/*.log
+datasets/raw/*.gz
