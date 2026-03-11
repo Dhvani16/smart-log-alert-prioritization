@@ -5,6 +5,7 @@ import os
 
 from database.db import SessionLocal
 from services.job_service import create_job
+from services.log_service import process_logs
 
 router = APIRouter()
 
@@ -30,6 +31,8 @@ async def upload_logs(file: UploadFile = File(...), db: Session = Depends(get_db
         shutil.copyfileobj(file.file, buffer)
 
     job = create_job(db, file.filename)
+
+    process_logs(file_location, job.id, db)
 
     return {
         "job_id": job.id,
