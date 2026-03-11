@@ -1,9 +1,10 @@
 import pandas as pd
 import re
+from sqlalchemy.orm import Session
 from anomaly_detection.isolation_forest import detect_anomalies
 from models.alert import Alert
 from models.job import Job
-from sqlalchemy.orm import Session
+from prioritization.severity_engine import compute_severity, classify_severity
 
 def parse_logs(file_path):
 
@@ -53,21 +54,35 @@ def extract_features(df):
 
 def store_alerts(df, scores, preds, job_id, db: Session):
 
+    alerts = []
+
     for i in range(len(df)):
 
         if preds[i] == -1:
 
-            alert = Alert(
-                job_id=job_id,
-                log_level=df.iloc[i]["log_level"],
-                message=df.iloc[i]["message"],
-                anomaly_score=float(scores[i]),
-                severity_score=0,
-                severity_level="low"
+            log_level = df.iloc[i]["log_level"]
+            frequency = df.iloc[i]["frequency"]
+
+            severity_score = compute_severity(
+                log_level,
+                float(scores[i]),
+                frequency
             )
 
-            db.add(alert)
+            severity_level = classify_severity(severity_score)
 
+            alert = Alert(
+                job_id=job_id,
+                log_level=log_level,
+                message=df.iloc[i]["message"],
+                anomaly_score=float(scores[i]),
+                severity_score=severity_score,
+                severity_level=severity_level
+            )
+
+            alerts.append(alert)
+
+    db.bulk_save_objects(alerts)
     db.commit()
 
 def process_logs(file_path, job_id, db):
