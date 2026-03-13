@@ -6,20 +6,55 @@ from models.alert import Alert
 from models.job import Job
 from prioritization.severity_engine import compute_severity, classify_severity
 
+# def parse_logs(file_path):
+
+#     logs = []
+
+#     with open(file_path, "r") as f:
+#         for line in f:
+
+#             parts = line.strip().split()
+
+#             if len(parts) < 5:
+#                 continue
+
+#             log_level = parts[3]
+#             message = " ".join(parts[4:])
+
+#             logs.append({
+#                 "log_level": log_level,
+#                 "message": message,
+#                 "message_length": len(message)
+#             })
+
+#     df = pd.DataFrame(logs)
+
+#     return df
+
 def parse_logs(file_path):
 
     logs = []
 
-    with open(file_path, "r") as f:
+    with open(file_path, "r", encoding="utf-8") as f:
         for line in f:
 
             parts = line.strip().split()
 
-            if len(parts) < 5:
+            if len(parts) < 10:
                 continue
 
-            log_level = parts[3]
-            message = " ".join(parts[4:])
+            # BGL log level position
+            log_level = parts[8]
+
+            # normalize levels
+            level_map = {
+                "WARNING": "WARN",
+                "SEVERE": "ERROR"
+            }
+
+            log_level = level_map.get(log_level, log_level)
+
+            message = " ".join(parts[9:])
 
             logs.append({
                 "log_level": log_level,
@@ -40,7 +75,7 @@ def extract_features(df):
         "FATAL": 4
     }
 
-    df["log_level_num"] = df["log_level"].map(level_map).fillna(0)
+    df["log_level_num"] = df["log_level"].map(level_map).fillna(1)
 
     df["frequency"] = df.groupby("message")["message"].transform("count")
 

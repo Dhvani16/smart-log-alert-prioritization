@@ -28,6 +28,7 @@ def get_alerts(job_id: int, limit: int = 50, db: Session = Depends(get_db)):
     return [
         {
             "log_level": a.log_level,
+            "message": a.message,
             "anomaly_score": a.anomaly_score,
             "severity_score": a.severity_score,
             "severity_level": a.severity_level

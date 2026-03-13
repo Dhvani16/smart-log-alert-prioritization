@@ -5,11 +5,13 @@ def compute_severity(log_level, anomaly_score, frequency):
     level_weights = {
         "INFO": 0.1,
         "WARN": 0.4,
+        "WARNING": 0.4,
         "ERROR": 0.7,
+        "SEVERE": 0.8,
         "FATAL": 1.0
     }
 
-    log_weight = level_weights.get(log_level, 0.1)
+    log_weight = level_weights.get(log_level, 0.5)
 
     anomaly_component = abs(anomaly_score)
 
@@ -24,7 +26,7 @@ def compute_severity(log_level, anomaly_score, frequency):
         0.1 * burst_score
     )
 
-    return severity_score
+    return min(severity_score, 1.0)
 
 def classify_severity(score):
 
