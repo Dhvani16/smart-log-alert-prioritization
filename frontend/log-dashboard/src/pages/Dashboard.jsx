@@ -8,12 +8,10 @@ function Dashboard() {
   const [alerts, setAlerts] = useState([])
 
   useEffect(() => {
-
-    fetchAlerts(5).then(res => {
-      console.log(res.data)
+    fetchAlerts(1).then(res => {
+      console.log("API RESPONSE:", res.data)
       setAlerts(res.data)
     })
-
   }, [])
 
   const criticalCount = alerts.filter(a => a.severity_level === "critical").length

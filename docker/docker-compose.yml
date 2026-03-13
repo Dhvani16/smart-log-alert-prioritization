@@ -1,0 +1,33 @@
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: log_postgres_alert
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: logmonitor
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/backend.Dockerfile
+    container_name: log_backend_alert
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/logmonitor
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/frontend.Dockerfile
+    container_name: log_frontend_alert
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
